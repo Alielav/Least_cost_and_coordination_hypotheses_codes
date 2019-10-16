@@ -3,6 +3,8 @@
 
 R code for predicting leaf internal to ambient CO2 concentrations (ci/ca) and gross primary production (GPP) based on the least-cost and coordination hypotheses. 
 
+Last update 16 October 2019
+
 The implementation of the model in R is now available via the R package rpmodel (https://github.com/stineb/rpmodel; Stocker et al., in revision). 
 
  
