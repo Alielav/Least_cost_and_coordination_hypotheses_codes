@@ -1,7 +1,7 @@
 
 # Purpose
 
-R code for predicting leaf internal to ambient CO2 concentrations (ci/ca) and gross primary production (GPP) based on the least-cost and coordination hypotheses. 
+R code for predicting leaf internal to ambient CO2 concentrations (ci/ca), gross primary production (GPP) and discrimination against 13C (D13C) based on the least-cost and coordination hypotheses. 
 
 Last update 16 October 2019
 
