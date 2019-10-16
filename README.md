@@ -1,31 +1,16 @@
 
-# R code for predicting leaf internal to ambient CO2 concentrations (ci/ca) and gross primary production (GPP) based on the least-cost and coordination hypotheses (Prentice et al. 2014; Wang et al. 2017)
-# by Alienor Lavergne
-# Last update: 24 June 2019
+# Purpose
 
-Output: Ratio of leaf-internal to ambient CO2 concentrations (ci/ca or chi, unitless)
-Input:  Elevation (elv, m), 
-        Temperature (tc, C), 
-        Vapour pressure deficit (vpd, kPa), 
-        CO2 concentrations (ca, ppm, optional)
-Ref:    Wang et al. (2017), Nature Plants: equation (8) or (9) 
+R code for predicting leaf internal to ambient CO2 concentrations (ci/ca) and gross primary production (GPP) based on the least-cost and coordination hypotheses. 
 
-
-Output: Ratio of to ambient CO2 concentrations (cc/ca, or chc, unitless)
-Input:  Elevation (elv, m), 
-        Temperature (tc, C), 
-        Vapour pressure deficit (vpd, kPa), 
-        Ratio of mesophyll to stomatal conductance (teta, unitless),
-        CO2 concentrations (ca, ppm, optional)
-Ref:    Wang et al. (2017), Nature Plants: equation (33) or (34) 
-        
-Outputs: Gross primaray production (GPP, gC m-2 time-1)
-Input:  Elevation (elv, m), 
-        Temperature (tc, C), 
-        Vapour pressure deficit (vpd, kPa), 
-        CO2 concentrations (ca, ppm),
-        Photosynthetic photon flux density (PPFD, mol m-2 time-1),
-        fraction of absorbed photosynthetically active radiation (fAPAR, unitless)
-Ref:    Wang et al. (2017), Nature Plants: equation (2) 
+The implementation of the model in R is now available via the R package rpmodel (https://github.com/stineb/rpmodel; Stocker et al., in revision). 
 
  
+# References
+
+Stocker, B. D., Wang, H., Smith, N. G., Harrison, S. P., Keenan, T. F., Sandoval, D., Davis, T., and Prentice, I. C.: P-model v1.0: An optimality-based light use efficiency model for simulating ecosystem gross primary production, Geosci. Model Dev. Discuss., https://doi.org/10.5194/gmd-2019-200, in revision, 2019.
+
+Wang, H., Prentice, I. C., Keenan, T. F., Davis, T. W., Wright, I. J., Cornwell, W. K.,Evans, B. J., and Peng, C.: Towards a universal model for carbon dioxide uptake by plants, Nat Plants, 3, 734–741, 2017.
+
+Prentice, I. C., Dong, N., Gleason, S. M., Maire, V., and Wright, I. J.: Balancingthe costs of carbon gain and water transport: testing a new theoretical frameworkfor plant functional ecology, Ecology Letters, 17, 82–91, 10.1111/ele.12211, http://dx.doi.org/10.1111/ele.12211, 2014.
+
