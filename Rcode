@@ -8,12 +8,12 @@
 ## 1. parameterization
 ##===================================
 
-beta <- 146 # the ratio of cost factor b to a at reference temperature, as in Smith et al. (2019)
-cstar <- 0.41 # the cost factor of maintaining Jmax, as in Wang et al. (2017)
+# beta <- 146     # the ratio of cost factor b to a at reference temperature, as estimated from the current tree ring dataset
+cstar <- 0.41   # the cost factor of maintaining Jmax, as in Wang et al. (2017)
 
-kTo <- 25   # base temperature, C (Berberan-Santos at el. 1997)
+kTo <- 25       # base temperature, C (Berberan-Santos at el. 1997)
 kPo <- 101325   # standard atmosphere, Pa (Allen, 1973)
-
+Mc<-12.0107     # molecular mass of C, g mol-1
 
 ##===================================
 ## 2. define functions
@@ -205,7 +205,7 @@ kPo <- 101325   # standard atmosphere, Pa (Allen, 1973)
   
   
   # calculate Gstar (CO2 compensation point) in Pa
-  CO2.compens.point <- function( tc ) {
+  CO2.compens.point <- function( tc,patm ) {
     #-----------------------------------------------------------------------
     # Input:    float, air temperature, degrees C (tc)
     #         
@@ -219,11 +219,12 @@ kPo <- 101325   # standard atmosphere, Pa (Allen, 1973)
     #-----------------------------------------------------------------------
     
     # Define constants
-    gs25 <- 4.220    # Pa, assuming 25 deg C & 98.716 kPa)
+    gs25 <- 4.332  # Pa, value based on Bernacchi et al. (2001), converted to Pa by T. Davis assuming elevation of 227.076 m.a.s.l.
+  ##4.220 # Pa, assuming 25 deg C & 98.716 kPa) 
     dha  <- 37830    # J/mol
     kR   <- 8.3145   # J/mol/K
     
-    Gstar <- gs25 * exp( dha * ( tc - 25.0 ) / ( 298.15 * kR * ( tc + 273.15 ) ) )
+    Gstar <- gs25 * patm / calc_patm(0.0) * exp( dha * ( tc - 25.0 ) / ( 298.15 * kR * ( tc + 273.15 ) ) )
     
     return( Gstar )
     
@@ -243,17 +244,17 @@ kPo <- 101325   # standard atmosphere, Pa (Allen, 1973)
   }
 
 
-
 ##============================================
 ## 3. calculate ci/ca with least-cost hypothesis for different versions
 ##============================================
 
   # simple version: equation (8) in Wang et al. (2017) 
-chi_simple <- function (tc, elv, vpd) {
+chi_simple <- function (tc, elv, vpd,beta) {
   #-----------------------------------------------------------------------
   # Input:    float, air temperature, degrees C (tc)
   #           float, VPD (kPa)
   #           float, elevation (m)
+  #           float, beta
   # Output:   float, ci/ca
   # Ref:      Wang et al. (2017), Nature Plants 
   #-----------------------------------------------------------------------
@@ -264,9 +265,9 @@ chi_simple <- function (tc, elv, vpd) {
   ns      <- viscosity_h2o( tc, patm )  # Pa s 
   ns25    <- viscosity_h2o( kTo, kPo )  # Pa s 
   ns_star <- ns / ns25  # (unitless)
-  
-  xi  <- sqrt( (beta * kmm ) / ( 1.6 * ns_star ) )
-  
+    
+  xi  <- sqrt( (beta * (kmm) ) / ( 1.6 * ns_star ) )
+
   vpd_Pa <- vpd*1.e3  ## conversion kPa to Pa
   
   chi <- xi / (xi + sqrt(vpd_Pa))
@@ -275,13 +276,13 @@ chi_simple <- function (tc, elv, vpd) {
 
 
   # complex version: equation (9) in Wang et al. (2017) 
-chi_complex <- function (tc, elv, vpd,ca) {
+chi_complex <- function (tc, elv, vpd,ca,beta) {
   #-----------------------------------------------------------------------
   # Input:    float, air temperature, degrees C (tc)
   #           float, VPD (kPa)
   #           float, elevation (m)
-  #           float, CO2 (ppm)
-  #           float, CO2 compensation (m)
+  #           float, CO2 (Pa corrected for elevation) or ppm
+  #           float, beta
   # Output:   float, ci/ca
   # Ref:      Wang et al. (2017), Nature Plants 
   #-----------------------------------------------------------------------
@@ -291,8 +292,8 @@ chi_complex <- function (tc, elv, vpd,ca) {
 
   ## Conversion atmospheric [CO2] from ppm to Pa
   co2<-co2_to_ca(ca, patm)
-  
-  Gstar<-CO2.compens.point( tc ) # Pa
+
+  Gstar<-CO2.compens.point( tc ,patm) # Pa
     
   ns      <- viscosity_h2o( tc, patm )  # Pa s 
   ns25    <- viscosity_h2o( kTo, kPo )  # Pa s 
@@ -305,13 +306,15 @@ chi_complex <- function (tc, elv, vpd,ca) {
   return(chi)
 }
 
+
 # version considering mesophyll conductance: equation (33) in Wang et al. (2017) 
-chc_simple <- function (tc, elv, vpd,teta) {
+chc_simple <- function (tc, elv, vpd,teta,beta) {
   #-----------------------------------------------------------------------
   # Input:    float, air temperature, degrees C (tc)
   #           float, VPD (kPa)
   #           float, elevation (m)
   #           float, teta (unitless)
+  #           float, beta
   # Output:   float, cc/ca
   # Ref:      Wang et al. (2017), Nature Plants 
   #-----------------------------------------------------------------------
@@ -319,7 +322,7 @@ chc_simple <- function (tc, elv, vpd,teta) {
   patm <- calc_patm( elv )  ### unite of elv is meter Patm in Pa
   kmm  <- calc_k( tc, patm ) #### tc degree c, patm : Pa, kmm : Pa
   
-  Gstar<-CO2.compens.point( tc ) # Pa
+  Gstar<-CO2.compens.point( tc,patm ) # Pa
   
   ns      <- viscosity_h2o( tc, patm )  # Pa s
   ns25    <- viscosity_h2o( kTo, kPo )  # Pa s
@@ -335,13 +338,14 @@ chc_simple <- function (tc, elv, vpd,teta) {
 
 
   # version considering mesophyll conductance: equation (34) in Wang et al. (2017) 
-chc_complex <- function (tc, elv, vpd,ca,teta) {
+chc_complex <- function (tc, elv, vpd,ca,teta,beta) {
   #-----------------------------------------------------------------------
   # Input:    float, air temperature, degrees C (tc)
   #           float, VPD (kPa)
   #           float, elevation (m)
   #           float, CO2 (ppm)
   #           float, teta (unitless)
+  #           float, beta
   # Output:   float, cc/ca
   # Ref:      Wang et al. (2017), Nature Plants 
   #-----------------------------------------------------------------------
@@ -352,7 +356,7 @@ chc_complex <- function (tc, elv, vpd,ca,teta) {
   ## Conversion atmospheric [CO2] from ppm to Pa
   co2<-co2_to_ca(ca, patm)
   
-  Gstar<-CO2.compens.point( tc ) # Pa
+  Gstar<-CO2.compens.point( tc ,patm) # Pa
   
   ns      <- viscosity_h2o( tc, patm )  # Pa s
   ns25    <- viscosity_h2o( kTo, kPo )  # Pa s
@@ -367,61 +371,11 @@ chc_complex <- function (tc, elv, vpd,ca,teta) {
 }
 
 
-# ## ki 
-# xi_simple <- function (tc,elv) {
-#   patm <- calc_patm( elv )  ### unite of elv is meter Patm in Pa
-#   kmm  <- calc_k( tc, patm ) #### tc degree c, patm : Pa, kmm : Pa
-#   
-#   ns      <- viscosity_h2o( tc, patm )  # Pa s 
-#   ns25    <- viscosity_h2o( kTo, kPo )  # Pa s 
-#   ns_star <- ns / ns25  # (unitless)
-#   
-#   xi  <- sqrt( (beta * kmm ) / ( 1.6 * ns_star ) )
-#   
-#   return(xi)
-# }
-# 
-# 
-# xi_complex <- function (tc,elv) {
-#   patm <- calc_patm( elv )  ### unite of elv is meter Patm in Pa
-#   kmm  <- calc_k( tc, patm ) #### tc degree c, patm : Pa, kmm : Pa
-#   
-#   Gstar<-CO2.compens.point( tc ) # Pa
-#   
-#   ns      <- viscosity_h2o( tc, patm )  # Pa s 
-#   ns25    <- viscosity_h2o( kTo, kPo )  # Pa s 
-#   ns_star <- ns / ns25  # (unitless)
-#   
-#   xi  <- sqrt( (beta * (kmm + Gstar)) / ( 1.6 * ns_star ) )
-#   
-#   return(xi)
-# }
-# 
-# 
-# xc_complex <- function (tc,elv,teta) {
-#   
-#   patm <- calc_patm( elv )  ### unite of elv is meter Patm in Pa
-#   kmm  <- calc_k( tc, patm ) #### tc degree c, patm : Pa, kmm : Pa
-#   
-#   Gstar<-CO2.compens.point( tc ) # Pa
-#   
-#   ns      <- viscosity_h2o( tc, patm )  # Pa s
-#   ns25    <- viscosity_h2o( kTo, kPo )  # Pa s
-#   ns_star <- ns / ns25  # (unitless)
-#   
-#   xc  <- sqrt( (beta * (kmm + Gstar)) / ( 1.6 * ns_star*(1+1/teta) ) )  ## teta = gm/gs = 1.4 Wang et al. 2017
-#   
-#   return(xc)
-# }
-
-
-
-
 ##============================================
 ## 4. Calculating GPP with coordination hypothesis
 ##============================================
 
-calc_GPP <- function (tc, elv, ca, vpd, PPFD,fAPAR) {
+calc_GPP <- function (tc, elv, ca, vpd, PPFD,fAPAR,cphi,beta) {
   #-----------------------------------------------------------------------
   # Input:    float, air temperature, degrees C (tc)
   #           float, VPD (kPa)
@@ -429,17 +383,19 @@ calc_GPP <- function (tc, elv, ca, vpd, PPFD,fAPAR) {
   #           float, CO2 (ppm)
   #           float, PPFD (mol m-2 time-1)
   #           float, fAPAR (unitless)
+  #           float, beta
   # Output:   float, GPP (gC m-2 time-1)
   # Ref:      Wang et al. (2017), Nature Plants 
   #-----------------------------------------------------------------------
   
-  maxQE <- 0.044 + 0.002625*tc - 0.425e-4*tc^2 ## instrinsic quantum yield for C3 plants based on Bernacchi et al. 2003
-  maxQE<- maxQE*12.0107 # unit: g C/ mol photon
+
+  maxQE <- cphi*(0.352 + 0.022*tc - 3.4e-4*tc^2)
+  maxQE<- maxQE*Mc # unit: g C/ mol photon  
   
   patm <- calc_patm( elv )  ### unite of elv is meter Patm in Pa
   kmm  <- calc_k( tc, patm ) #### tc degree c, patm : Pa, kmm : Pa
   
-  Gstar <- CO2.compens.point(tc)
+  Gstar <- CO2.compens.point(tc,patm)
   vpd_Pa <- vpd*1.e3  ## conversion kPa to Pa
   
   ns      <- viscosity_h2o( tc, patm )  # Pa s
@@ -462,5 +418,69 @@ calc_GPP <- function (tc, elv, ca, vpd, PPFD,fAPAR) {
 }
 
 
+##============================================
+## 5. Calculating D13C with least-cost hypothesis
+##============================================
 
+calc_D13C <- function (tc, elv, ca,vpd,b,f) {
+  #-----------------------------------------------------------------------
+  # Input:    float, air temperature, degrees C (tc)
+  #           float, VPD (kPa)
+  #           float, elevation (m)
+  #           float, CO2 (ppm)
+  #           parameter, b (permil)
+  #           parameter, f (permil)
+  # Output:   float, D13C (per mil)
+  # Ref:      Lavergne et al. (2019), in revision
+  #-----------------------------------------------------------------------
+  
+  a<-4.4 ## permil Craig (1953)
+  
+  patm<-calc_patm(elv) ## Pa
+  Gstar <- CO2.compens.point(tc,patm)  ## Pa
+ 
+  ## Conversion atmospheric [CO2] from ppm to Pa
+  co2<-co2_to_ca(ca, patm)
+  
+   # chi<-chi_simple(tc, elv, vpd, beta) ## unitless
+  chi<-chi_complex(tc, elv, vpd,co2,beta) ## unitless
+  
+  D13C<-a + (b-a)*chi - f*Gstar/co2
+  
+}
+
+
+  calc_D13C_meso <- function (tc, elv, ca,vpd,b,f,teta) {
+  #-----------------------------------------------------------------------
+  # Input:    float, air temperature, degrees C (tc)
+  #           float, VPD (kPa)
+  #           float, elevation (m)
+  #           float, CO2 (ppm)
+  #           parameter, b (permil)
+  #           parameter, f (permil)
+  # Output:   float, D13C (per mil)
+  # Ref:      Lavergne et al. (2019), in revision
+  #-----------------------------------------------------------------------
+  
+  a<-4.4      # permil Craig (1953)
+  am<-1.8     # permil Farquhar et al. (1989)
+  
+  gm25<-0.19  # mol m-2 s-1 Barçante Ladvocat Cintra et al. (2019)
+  gsmax<-0.5  # mol m-2 s-1 Barçante Ladvocat Cintra et al. (2019)
+  
+  patm<-calc_patm(elv) ## Pa
+  
+  ## Conversion atmospheric [CO2] from ppm to Pa
+  co2<-co2_to_ca(ca, patm)
+  
+  Gstar <- CO2.compens.point(tc,patm)  ## Pa
+
+  # chi<-chi_simple(tc, elv, vpd, beta) ## unitless
+  chi<-chi_complex(tc, elv, vpd,co2,beta) ## unitless
+
+  chc<-chc_complex(tc, elv, vpd,co2,teta,beta)
+
+  D13C<-a*(1-chi) + am*(chi-chc) + b*chc - f*Gstar/co2
+  
+}
 
