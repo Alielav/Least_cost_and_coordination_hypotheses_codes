@@ -11,7 +11,7 @@
 ##===================================
 
 kPo <- 101325   # standard atmosphere, Pa (Allen, 1973)
-kTo <- 288.15   # base temperature, K (Wang et al., 2017, New Phyto., Berberan-Santos at el. 1997)
+kTo <- 15       # base temperature, C (Wang et al., 2017, New Phyto., Berberan-Santos at el. 1997)
 kG <- 9.80665   # gravitational acceleration, m/s^2 (Allen, 1973)
 kR <- 8.3143    # universal gas constant, J/mol/K (Allen, 1973)
 Mc<-12.0107     # molecular mass of C, g mol-1
@@ -44,7 +44,7 @@ calc_patm <- function( elv ){
     kMa <- 0.028963 # molecular weight of dry air, kg/mol (Tsilingiris, 2008)
     
     # Convert elevation to pressure, Pa:
-    patm <- kPo*(1.0 - kL*elv/kTo)**(kG*kMa/(kR*kL))
+    patm <- kPo*(1.0 - kL*elv/(kTo+273.15))**(kG*kMa/(kR*kL))
     
     return (patm)
   }
