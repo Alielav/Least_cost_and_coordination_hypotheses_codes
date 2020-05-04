@@ -51,7 +51,7 @@ calc_patm <- function( elv ){
  
 
 # Calculates the Arrhenius-type temperature response   
-calc_ftemp_arrh<-function (tk, dha, tkref = kTo) {
+calc_ftemp_arrh<-function (tk, dha, tkref = 298.15) {
   # Ref:      Stocker et al. (2020)
   
   kR <- 8.3145
