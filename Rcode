@@ -4,7 +4,7 @@
 
 
 ## by Alienor Lavergne
-## updated on 4 May 2020
+## updated on 15 May 2020
 
 ##===================================
 ## 1. parameterization
@@ -74,8 +74,8 @@ calc_k <- function(tc, patm) {
     #-----------------------------------------------------------------------
     
     # Define constants
-    kc25 <- 40.13      # Pa, assuming 25 deg C & 99.1 kPa --> 404.9*10^-6*99100
-    ko25 <- 27589.44    # Pa, assuming 25 deg C & 99.1 kPa --> 278.4*10^-3*99100
+    kc25 <- 404.9 *10^-6 *patm   # Pa, assuming 25 deg C & 99.1 kPa --> 404.9*10^-6*99100 = 40.13 Pa
+    ko25 <- 278.4 *10^-3 *patm   # Pa, assuming 25 deg C & 99.1 kPa --> 278.4*10^-3*99100 = 27589.44 Pa
     dhac <- 79430      # J/mol
     dhao <- 36380      # J/mol
     kco  <- 2.09476e5  # ppm, US Standard Atmosphere
@@ -109,8 +109,10 @@ calc_k_cc <- function(tc, patm) {
     #-----------------------------------------------------------------------
     
     # Define constants
-    kc25 <- 26.99      # Pa, assuming 25 deg C & 99.1 kPa --> 272.38*10^-6*99100
-    ko25 <- 16432.76    # Pa, assuming 25 deg C & 99.1 kPa --> 165.82*10^-3*99100
+    kc25 <- 272.38 *10^-6 * patm  # Pa, assuming 25 deg C & 99.1 kPa --> 272.38*10^-6*99100 = 26.99 Pa
+    ko25 <- 165.82 *10^-3 * patm    # Pa, assuming 25 deg C & 99.1 kPa --> 165.82*10^-3*99100 = 16432.76 Pa
+   # kc25 <- 27.238      # Pa, Sharkey et al. (2007)
+   # ko25 <- 16582      # Pa, Sharkey et al. (2007)
     dhac <- 80990      # J/mol
     dhao <- 23720      # J/mol
     kco  <- 2.09476e5  # ppm, US Standard Atmosphere
@@ -265,10 +267,10 @@ CO2.compens.point <- function( tc,patm) {
     #-----------------------------------------------------------------------
     
     # Define constants
-    gs25 <- 4.24  # Pa, assuming 25 deg C & 99.1 kPa --> 42.75*10^-6*99100
+    gs25 <- 42.75 *10^-6 *patm  # Pa, assuming 25 deg C & 99.1 kPa --> 42.75*10^-6*99100 = 4.24 Pa
     dha  <- 37830    # J/mol
     
-    Gstar <- gs25 * patm / 99100 * calc_ftemp_arrh((tc+273.15),dha)
+    Gstar <- gs25 * calc_ftemp_arrh((tc+273.15),dha)
     
     return( Gstar )
     
@@ -290,10 +292,11 @@ CO2.compens.point.cc <- function( tc,patm) {
     #-----------------------------------------------------------------------
     
     # Define constants
-    gs25 <- 3.71  # Pa, assuming 25 deg C & 99.1 kPa --> 37.43*10^-6*99100
+    gs25 <- 37.43 *10^-6 *patm  # Pa, assuming 25 deg C & 99.1 kPa --> 37.43*10^-6*99100 = 3.71 Pa
+   # gs25 <- 3.743  # Pa, Sharkey et al. (2007)
     dha  <- 24460    # J/mol
     
-    Gstar <- gs25 * patm / 99100 * calc_ftemp_arrh((tc+273.15),dha)
+    Gstar <- gs25 * calc_ftemp_arrh((tc+273.15),dha)
     
     return( Gstar )
     
@@ -314,7 +317,7 @@ CO2.compens.point.new <- function( tc,patm,alpha) {
     #-----------------------------------------------------------------------
     
     # Define constants
-    gs25 <- 4.24  # Pa, assuming 25 deg C & 99.1 kPa --> 42.75*10^-6*99100
+    gs25 <- 42.75 *10^-6 *patm  # Pa, assuming 25 deg C & 99.1 kPa --> 42.75*10^-6*99100 = 4.24 Pa
     dha  <- 37830    # activation energy (J/mol)
 
     # kco  <- 2.09476e5  # ppm, US Standard Atmosphere
@@ -324,7 +327,7 @@ CO2.compens.point.new <- function( tc,patm,alpha) {
     #   
     # Gstar <- 0.5*(1-alpha)*po/sco
       
-    Gstar <- gs25 * patm / 99100 * calc_ftemp_arrh((tc+273.15),dha)*(1-alpha)
+    Gstar <- gs25 * calc_ftemp_arrh((tc+273.15),dha)*(1-alpha)
     
     return( Gstar )
     
