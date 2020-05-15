@@ -3,7 +3,7 @@
 
 R code for predicting leaf internal to ambient CO2 concentrations (ci/ca) and discrimination against 13C (D13C) assuming infite or finite mesophyll conductance based on the least-cost hypothesis, and gross primary production (GPP) based on the coordination hypothesis. 
 
-Last update 04 May 2020
+Last update 15 May 2020
 
  
 # References
